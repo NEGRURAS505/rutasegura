@@ -75,6 +75,9 @@ Transmite la posición de una unidad. Requiere token de conductor.
 
 - En `MOCK_MODE=true` devuelve 3 unidades ficticias moviéndose sin depender de
   la base de datos.
+- Los recorridos demo usan trazos aproximados ajustados a vialidades de
+  OpenStreetMap. Las referencias no son paraderos oficiales verificados; ver
+  [docs/rutas.md](rutas.md).
 
 ### GET /routes
 
@@ -85,9 +88,9 @@ Rutas con su trazo y paradas.
 [
   {
     "id": 1,
-    "nombre": "Ruta 1 - Centro",
+    "nombre": "Ruta Costera · trazo aproximado",
     "trazo": [{ "lat": 18.646, "lon": -91.834 }],
-    "paradas": [{ "nombre": "Parada 1 - Centro", "lat": 18.646, "lon": -91.834 }]
+    "paradas": [{ "nombre": "Referencia aprox. · Malecón Costero", "lat": 18.646, "lon": -91.834 }]
   }
 ]
 ```
@@ -105,7 +108,7 @@ Check-in del pasajero vía QR.
   "unit_id": "U-001",
   "nombre_unidad": "Unidad 1",
   "route_id": 1,
-  "nombre_ruta": "Ruta 1 - Centro",
+  "nombre_ruta": "Ruta Costera · trazo aproximado",
   "timestamp": "2026-10-15T18:11:22Z",
   "lat": 18.6469,
   "lon": -91.835,
@@ -209,8 +212,8 @@ Se crean automáticamente si las tablas están vacías:
 
 - `units`: 3 unidades ficticias por ruta (9 en total) con tokens (`driver_token`,
   `qr_token`) de demo.
-- `routes`: 3 rutas ficticias de Ciudad del Carmen con trazo y paradas genéricas
-  (nombres "Parada N", sin datos reales de personas).
+- `routes`: 3 trazos aproximados de Ciudad del Carmen con referencias
+  cartográficas, no paraderos oficiales verificados (ver `docs/rutas.md`).
 - `alerts`: vacía · `trips`: vacía · `reports`: vacía.
 
 ## Cambios de contrato

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#160b29" />
+    <title>Amor X Carmen Movi App</title>
+  </head>
+  <body>
+    <div class="stripe" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Amor X Carmen Movi App, inicio">
+        <span class="brand-icon">A</span>
+        <span><strong>Amor X Carmen</strong><small>MOVI APP · CIUDAD DEL CARMEN</small></span>
+      </a>
+      <button id="settings-open" class="icon-button" aria-label="Configuración">⚙</button>
+    </header>
+
+    <main>
+      <nav class="mode-switch" aria-label="Modo de uso">
+        <button class="mode-button active" data-mode="passenger">Pasajero</button>
+        <button class="mode-button" data-mode="driver">Conductor</button>
+      </nav>
+
+      <section id="passenger-mode" class="mode-panel">
+        <div class="welcome-row">
+          <div><p class="eyebrow">MODO PASAJERO</p><h1>Viaja con más tranquilidad</h1></div>
+          <span class="live-pill"><i></i> API <span id="api-state">conectando</span></span>
+        </div>
+
+        <section class="card map-card">
+          <div class="card-heading map-heading"><div><h2>Rutas y unidades cercanas</h2><p>Recorridos aproximados y referencias de ruta en Ciudad del Carmen</p></div><div class="map-actions"><button id="my-location" class="small-button">Mi ubicación</button><button id="refresh-map" class="small-button">Actualizar</button></div></div>
+          <div id="map" role="img" aria-label="Mapa de rutas y unidades de autobús"></div>
+          <div class="map-legend"><span><i class="legend-user"></i> Tú</span><span><i class="legend-bus">🚌</i> Autobús</span><span><i class="legend-stop"></i> Referencia aprox.</span></div>
+          <div id="route-legend" class="route-legend"></div>
+          <p class="muted route-data-note">Trazos ajustados a calles de OpenStreetMap desde referencias públicas. Los puntos no están confirmados como paraderos oficiales.</p>
+          <div id="nearby-info" class="nearby-info" aria-live="polite"><p class="muted">Activa “Mi ubicación” para calcular distancias y tiempos.</p></div>
+          <div id="units-list" class="units-list"><p class="muted">Consultando unidades…</p></div>
+        </section>
+
+        <div class="action-grid">
+          <section class="card action-card">
+            <div class="action-icon qr">▦</div><div><h2>Comprobante de viaje</h2><p>Escanea el QR de la unidad para registrar tu viaje.</p></div>
+            <button id="scan-qr" class="primary-button">Escanear QR</button>
+            <div id="trip-receipt" class="receipt hidden" aria-live="polite"></div>
+          </section>
+          <section class="card action-card panic-card">
+            <div class="action-icon sos">!</div><div><h2>Necesito ayuda</h2><p>Envía una alerta al operador. La atención la decide una persona.</p></div>
+            <button id="passenger-panic" class="danger-button">Enviar alerta</button>
+          </section>
+        </div>
+
+        <section class="card compact-card">
+          <h2>Reporte ciudadano</h2><p class="muted">Describe brevemente un problema en la ruta.</p>
+          <form id="report-form" class="stack-form"><textarea id="report-text" maxlength="1000" placeholder="Ej. Hay un bache en una parada…" required></textarea><button class="secondary-button" type="submit">Enviar reporte</button></form>
+        </section>
+
+        <section class="card compact-card">
+          <h2>Asistente Amor X Carmen</h2><p class="muted">Responde usando la información disponible de rutas y unidades.</p>
+          <form id="assistant-form" class="stack-form"><input id="assistant-question" maxlength="500" placeholder="¿Dónde va la unidad U-001?" required /><button class="secondary-button" type="submit">Preguntar</button></form>
+          <p id="assistant-answer" class="answer hidden" aria-live="polite"></p>
+        </section>
+      </section>
+
+      <section id="driver-mode" class="mode-panel hidden">
+        <div class="welcome-row">
+          <div><p class="eyebrow">MODO CONDUCTOR</p><h1>Turno de conducción</h1></div>
+          <span id="driver-status" class="status-pill status-idle"><i></i> Turno detenido</span>
+        </div>
+
+        <section class="card driver-setup">
+          <h2>Unidad y ruta</h2>
+          <p class="muted">Elige tu unidad, ruta y token de conductor asignado.</p>
+          <div class="form-grid">
+            <label>Unidad<select id="driver-unit"><option value="U-001">U-001 · Unidad 1</option><option value="U-002">U-002 · Unidad 2</option><option value="U-003">U-003 · Unidad 3</option></select></label>
+            <label>Ruta<select id="driver-route"><option value="1">Ruta Costera · trazo aproximado</option><option value="2">Ruta Campus III · trazo aproximado</option><option value="3">Ruta Laguna &amp; Términos · trazo esquemático</option></select></label>
+          </div>
+          <label>Token de unidad<input id="driver-token" type="password" autocomplete="off" placeholder="Pega el token seguro de la unidad" /></label>
+          <p class="hint">El token se guarda solo en este dispositivo. No lo compartas ni lo incluyas en el APK.</p>
+          <button id="save-driver-settings" class="secondary-button">Guardar configuración</button>
+        </section>
+
+        <section class="card location-card">
+          <div class="card-heading"><div><h2>Transmisión de ubicación</h2><p id="location-detail">Activa el turno para iniciar el GPS.</p></div><span id="queue-count" class="queue-count">0 pendientes</span></div>
+          <div class="coordinates"><span>ÚLTIMA POSICIÓN</span><strong id="last-position">Esperando ubicación</strong><small id="last-position-time">—</small></div>
+          <div class="button-row"><button id="start-shift" class="primary-button">Iniciar turno</button><button id="stop-shift" class="secondary-button" disabled>Terminar turno</button></div>
+        </section>
+
+        <section class="card panic-card driver-panic">
+          <div class="action-icon sos">!</div><div><h2>Botón de pánico</h2><p>Mantén presionado dos segundos para enviar la alerta al operador.</p></div>
+          <button id="driver-panic" class="danger-button hold-button"><span id="panic-label">Mantener para alertar</span></button>
+          <div class="hold-track"><span id="hold-progress"></span></div>
+        </section>
+
+        <section class="card setup-help">
+          <h2>Antes de iniciar el turno</h2>
+          <ol><li>Permite acceso a la ubicación mientras usas la app.</li><li>En Ajustes de Android, cambia Ubicación a <strong>Permitir siempre</strong>.</li><li>Permite notificaciones y desactiva la optimización de batería para Amor X Carmen Movi App.</li></ol>
+          <button id="open-app-settings" class="text-button">Abrir ajustes de la aplicación</button>
+          <p class="hint">Xiaomi y Huawei: revisa también Inicio automático. Samsung: agrega la app a “Nunca en suspensión”. Los nombres de menú varían por modelo.</p>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="settings-dialog" class="settings-dialog">
+      <form method="dialog" class="dialog-top"><h2>Conexión con Amor X Carmen</h2><button class="icon-button" aria-label="Cerrar">×</button></form>
+      <label>Dirección del backend<input id="api-base-url" type="url" placeholder="https://api.ejemplo.org" /></label>
+      <p class="hint">En emulador Android local puedes usar http://10.0.2.2:8000 (solo APK debug). Para teléfonos usa la dirección LAN o HTTPS.</p>
+      <div class="button-row"><button id="test-connection" class="secondary-button" type="button">Probar conexión</button><button id="settings-save" class="primary-button" type="button">Guardar</button></div>
+      <p id="settings-message" class="muted" aria-live="polite"></p>
+    </dialog>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

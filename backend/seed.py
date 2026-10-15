@@ -1,60 +1,107 @@
-"""Datos semilla: 3 rutas ficticias de Ciudad del Carmen, 3 unidades por ruta.
+"""Rutas de demostración para Ciudad del Carmen.
 
-Nombres genéricos (Parada N), sin datos reales de personas. Tokens de demo en
-.py para arrancar; en producción/deploy real deben rotarse.
+Los recorridos se trazan de forma aproximada a partir de referencias públicas:
+la UNACAR describe el itinerario de Campus III y notas periodísticas confirman
+la operación de Costera y la existencia de Laguna & Términos. No se publicaron
+trazos GPS oficiales; los puntos son referencias de mapa, no paraderos oficiales.
 """
+import json
 import secrets
+from pathlib import Path
 
 from sqlalchemy.orm import Session
 
 from .models import Route, Unit
 
-# Coordenadas aproximadas del centro de Ciudad del Carmen (sin datos de personas)
-BASE_LAT, BASE_LON = 18.6469, -91.8350
+
+def _points(values: list[tuple[float, float]]) -> list[dict]:
+    """Convierte pares (latitud, longitud) al formato de la API."""
+    return [{"lat": lat, "lon": lon} for lat, lon in values]
 
 
-def _trazo_ruta(delta_lat: float, delta_lon: float) -> list[dict]:
-    """Trazo simple en zig-zag de 6 puntos cerca del centro de la ciudad."""
+def _references(values: list[tuple[str, float, float]]) -> list[dict]:
     return [
-        {"lat": round(BASE_LAT + delta_lat, 5), "lon": round(BASE_LON + delta_lon, 5)},
-        {"lat": round(BASE_LAT + delta_lat + 0.003, 5), "lon": round(BASE_LON + delta_lon + 0.002, 5)},
-        {"lat": round(BASE_LAT + delta_lat + 0.006, 5), "lon": round(BASE_LON + delta_lon, 5)},
-        {"lat": round(BASE_LAT + delta_lat + 0.006, 5), "lon": round(BASE_LON + delta_lon - 0.003, 5)},
-        {"lat": round(BASE_LAT + delta_lat + 0.003, 5), "lon": round(BASE_LON + delta_lon - 0.005, 5)},
-        {"lat": round(BASE_LAT + delta_lat, 5), "lon": round(BASE_LON + delta_lon, 5)},
+        {"nombre": f"Referencia aprox. · {name}", "lat": lat, "lon": lon}
+        for name, lat, lon in values
     ]
 
 
-def _paradas(delta_lat: float, delta_lon: float) -> list[dict]:
-    """3 paradas de ejemplo sobre el trazo con nombres genéricos."""
-    trazo = _trazo_ruta(delta_lat, delta_lon)
-    return [
-        {"nombre": "Parada 1 - Centro", "lat": trazo[0]["lat"], "lon": trazo[0]["lon"]},
-        {"nombre": "Parada 2 - Mercado", "lat": trazo[2]["lat"], "lon": trazo[2]["lon"]},
-        {"nombre": "Parada 3 - Terminal", "lat": trazo[4]["lat"], "lon": trazo[4]["lon"]},
-    ]
-
-
+# Waypoints cartográficos aproximados, en orden de recorrido. Campus III sigue
+# el itinerario publicado por UNACAR; los otros dos siguen referencias costeras
+# visibles en materiales de Amor x Carmen y cobertura reportada, por validar.
 RUTAS_SEMILLA = [
-    {"nombre": "Ruta 1 - Centro", "delta": (0.000, 0.000)},
-    {"nombre": "Ruta 2 - Libertad", "delta": (0.008, 0.004)},
-    {"nombre": "Ruta 3 - Bahía", "delta": (-0.008, -0.004)},
+    {
+        "nombre": "Ruta Costera · trazo aproximado",
+        "trazo": _points([
+            (18.6752, -91.7825), (18.6705, -91.7928), (18.6645, -91.7965),
+            (18.6685, -91.8255), (18.6562, -91.8392), (18.6462, -91.8398),
+            (18.6392, -91.8365),
+        ]),
+        "paradas": _references([
+            ("Bivalvo", 18.6752, -91.7825),
+            ("Tierra y Libertad", 18.6705, -91.7928),
+            ("Malecón Costero", 18.6685, -91.8255),
+            ("Calle 26", 18.6562, -91.8392),
+            ("Malecón del Centro", 18.6462, -91.8398),
+        ]),
+    },
+    {
+        "nombre": "Ruta Campus III · trazo aproximado",
+        "trazo": _points([
+            (18.6552, -91.8148), (18.6495, -91.8112), (18.6480, -91.8152),
+            (18.6512, -91.8180), (18.6558, -91.8208), (18.6602, -91.8228),
+            (18.6652, -91.8165), (18.6615, -91.8060), (18.6618, -91.8012),
+            (18.6518, -91.7968), (18.6455, -91.7852), (18.6368, -91.7782),
+            (18.6485, -91.7798), (18.6555, -91.7718), (18.6632, -91.7598),
+        ]),
+        "paradas": _references([
+            ("Av. Corregidora · Campus II / Zentralia", 18.6552, -91.8148),
+            ("Av. 31 / Periférica Norte", 18.6558, -91.8208),
+            ("Malecón de la Obrera", 18.6652, -91.8165),
+            ("Boquerón del Palmar", 18.6618, -91.8012),
+            ("Mercado Chechén", 18.6518, -91.7968),
+            ("Renovación", 18.6455, -91.7852),
+            ("Av. Contadores / Jardín Botánico", 18.6485, -91.7798),
+            ("Av. Central", 18.6555, -91.7718),
+            ("UNACAR Campus III", 18.6632, -91.7598),
+        ]),
+    },
+    {
+        "nombre": "Ruta Laguna & Términos · trazo esquemático",
+        "trazo": _points([
+            (18.6455, -91.8398), (18.6318, -91.8295), (18.6348, -91.8262),
+            (18.6415, -91.8152), (18.6352, -91.8202), (18.6322, -91.8185),
+            (18.6395, -91.8118), (18.6432, -91.8058),
+        ]),
+        "paradas": _references([
+            ("Mercado AFA", 18.6455, -91.8398),
+            ("La Puntilla", 18.6318, -91.8295),
+            ("Miguel de la Madrid", 18.6348, -91.8262),
+            ("Salitral", 18.6415, -91.8152),
+            ("Manigua", 18.6322, -91.8185),
+            ("Benito Juárez", 18.6432, -91.8058),
+        ]),
+    },
 ]
+
+with (Path(__file__).with_name("route_traces.json")).open(encoding="utf-8") as _file:
+    TRAZOS_CALZADOS = json.load(_file)
 
 UNIDADES_POR_RUTA = 3
 
 
 def seed_if_empty(db: Session) -> None:
-    """Crea rutas y unidades solo si las tablas están vacías (idempotente)."""
-    if db.query(Route).count() == 0:
-        for i, cfg in enumerate(RUTAS_SEMILLA, start=1):
-            d_lat, d_lon = cfg["delta"]
-            db.add(Route(
-                nombre=cfg["nombre"],
-                trazo=_trazo_ruta(d_lat, d_lon),
-                paradas=_paradas(d_lat, d_lon),
-            ))
-        db.commit()
+    """Sincroniza rutas de demo para que DB persistentes reciban los trazos nuevos."""
+    existentes = db.query(Route).order_by(Route.id).all()
+    for route_id, cfg in enumerate(RUTAS_SEMILLA, start=1):
+        ruta = next((r for r in existentes if r.id == route_id), None)
+        if ruta is None:
+            ruta = Route(id=route_id, nombre=cfg["nombre"])
+            db.add(ruta)
+        ruta.nombre = cfg["nombre"]
+        ruta.trazo = TRAZOS_CALZADOS.get(cfg["nombre"], cfg["trazo"])
+        ruta.paradas = cfg["paradas"]
+    db.commit()
 
     if db.query(Unit).count() == 0:
         for route_id in range(1, len(RUTAS_SEMILLA) + 1):

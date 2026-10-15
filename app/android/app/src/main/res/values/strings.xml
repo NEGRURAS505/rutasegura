@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Amor X Carmen Movi App</string>
+    <string name="title_activity_main">Amor X Carmen Movi App</string>
+    <string name="package_name">org.rutasegura.carmen</string>
+    <string name="custom_url_scheme">org.rutasegura.carmen</string>
+</resources>
