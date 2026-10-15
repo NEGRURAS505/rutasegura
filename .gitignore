@@ -31,7 +31,8 @@ android/local.properties
 *.keystore
 *.jks
 
-# IDE y SO
+# IDE y SO (carpeta local de la app Freebuff, fuera del repo)
+.freebuff/
 .vscode/
 .idea/
 .DS_Store
